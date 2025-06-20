@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>बिक्री प्रबंधन</h2>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>नई बिक्री दर्ज करें</h5>
+            </div>
+            <div class="card-body">
+                <form id="sale-form" method="POST" action="{{ url_for('manage_sales') }}">
+                    <div class="mb-3">
+                        <label class="form-label">प्रोडक्ट</label>
+                        <select class="form-select" name="product_id" id="product_id" required>
+                            <option value="">-- प्रोडक्ट चुनें --</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}" 
+                                    data-price="{{ "%.2f"|format(product.price) }}" 
+                                    data-stock="{{ product.quantity }}">
+                                {{ product.name }} (उपलब्ध: {{ product.quantity }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">मात्रा</label>
+                        <input type="number" class="form-control" name="quantity" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">कीमत</label>
+                        <p id="price-display" class="form-control-plaintext">कृपया प्रोडक्ट चुनें</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ग्राहक का नाम (वैकल्पिक)</label>
+                        <input type="text" class="form-control" name="customer">
+                    </div>
+                    <button type="submit" class="btn btn-primary">बिक्री दर्ज करें</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>हाल की बिक्री</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>तारीख</th>
+                                <th>प्रोडक्ट</th>
+                                <th>मात्रा</th>
+                                <th>कुल (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in sales %}
+                            <tr>
+                                <td>{{ sale.sale_date.strftime('%d-%m-%Y') }}</td>
+                                <td>
+                                    {% for product in products if product.id == sale.product_id %}
+                                        {{ product.name }}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ sale.quantity }}</td>
+                                <td>{{ "%.2f"|format(sale.quantity * sale.sale_price) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">कोई बिक्री रिकॉर्ड नहीं मिला</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

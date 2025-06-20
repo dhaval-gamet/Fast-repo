@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>प्रोडक्ट प्रबंधन</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            नया प्रोडक्ट जोड़ें
+        </button>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>नाम</th>
+                                <th>श्रेणी</th>
+                                <th>मात्रा</th>
+                                <th>कीमत (₹)</th>
+                                <th>बारकोड</th>
+                                <th>कार्य</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ product.id }}</td>
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.category }}</td>
+                                <td class="{% if product.quantity < 5 %}text-danger{% elif product.quantity < 10 %}text-warning{% endif %}">
+                                    {{ product.quantity }}
+                                </td>
+                                <td>{{ "%.2f"|format(product.price) }}</td>
+                                <td>{{ product.barcode or '-' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" 
+                                        data-bs-target="#editProductModal{{ product.id }}">
+                                        एडिट
+                                    </button>
+                                    <a href="{{ url_for('delete_product', id=product.id) }}" 
+                                       class="btn btn-sm btn-danger" 
+                                       onclick="return confirm('क्या आप वाकई इस प्रोडक्ट को डिलीट करना चाहते हैं?')">
+                                        डिलीट
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <!-- एडिट प्रोडक्ट मोडल -->
+                            <div class="modal fade" id="editProductModal{{ product.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">प्रोडक्ट एडिट करें</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('edit_product', id=product.id) }}">
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">प्रोडक्ट नाम</label>
+                                                    <input type="text" class="form-control" name="name" value="{{ product.name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">मात्रा</label>
+                                                    <input type="number" class="form-control" name="quantity" value="{{ product.quantity }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">कीमत (₹)</label>
+                                                    <input type="number" step="0.01" class="form-control" name="price" value="{{ product.price }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">श्रेणी</label>
+                                                    <input type="text" class="form-control" name="category" value="{{ product.category }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">बारकोड</label>
+                                                    <input type="text" class="form-control" name="barcode" value="{{ product.barcode or '' }}">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">बंद करें</button>
+                                                <button type="submit" class="btn btn-primary">सेव करें</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">कोई प्रोडक्ट नहीं मिला</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- नया प्रोडक्ट मोडल -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">नया प्रोडक्ट जोड़ें</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('manage_products') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">प्रोडक्ट नाम</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">मात्रा</label>
+                        <input type="number" class="form-control" name="quantity" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">कीमत (₹)</label>
+                        <input type="number" step="0.01" class="form-control" name="price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">श्रेणी</label>
+                        <input type="text" class="form-control" name="category" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">बारकोड (वैकल्पिक)</label>
+                        <input type="text" class="form-control" name="barcode">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">बंद करें</button>
+                    <button type="submit" class="btn btn-primary">जोड़ें</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

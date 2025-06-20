@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+        <div class="col-md-8">
+                <h2>डैशबोर्ड</h2>
+                <p>आज की तारीख: {{ now.strftime('%d-%m-%Y') }}</p>
+        </div>
+</div>
+
+<div class="row mt-4">
+        <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                                <h5 class="card-title">कुल प्रोडक्ट्स</h5>
+                                <p class="card-text display-4">{{ total_products }}</p>
+                        </div>
+                </div>
+        </div>
+        
+        <div class="col-md-4">
+                <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                                <h5 class="card-title">कम स्टॉक</h5>
+                                <p class="card-text display-4">{{ low_stock }}</p>
+                        </div>
+                </div>
+        </div>
+        
+        <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                                <h5 class="card-title">कुल स्टॉक मूल्य</h5>
+                                <p class="card-text display-4">₹{{ "%.2f"|format(stock_value) }}</p>
+                        </div>
+                </div>
+        </div>
+</div>
+
+<div class="row mt-4">
+        <div class="col-md-12">
+                <div class="card">
+                        <div class="card-header">
+                                <h5>कम स्टॉक वाले प्रोडक्ट्स</h5>
+                        </div>
+                        <div class="card-body">
+                                <div class="table-responsive">
+                                        <table class="table table-striped">
+                                                <thead>
+                                                        <tr>
+                                                                <th>ID</th>
+                                                                <th>नाम</th>
+                                                                <th>श्रेणी</th>
+                                                                <th>मात्रा</th>
+                                                                <th>कीमत</th>
+                                                                <th>कार्य</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody>
+                                                        {% for product in products if product.quantity < 10 %}
+                                                        <tr>
+                                                                <td>{{ product.id }}</td>
+                                                                <td>{{ product.name }}</td>
+                                                                <td>{{ product.category }}</td>
+                                                                <td class="{{ 'text-danger' if product.quantity < 5 else 'text-warning' }}">
+                                                                        {{ product.quantity }}
+                                                                </td>
+                                                                <td>₹{{ "%.2f"|format(product.price) }}</td>
+                                                                <td>
+                                                                        <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-sm btn-primary">एडिट</a>
+                                                                </td>
+                                                        </tr>
+                                                        {% else %}
+                                                        <tr>
+                                                                <td colspan="6" class="text-center">कोई कम स्टॉक वाला प्रोडक्ट नहीं मिला</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                </tbody>
+                                        </table>
+                                </div>
+                        </div>
+                </div>
+        </div>
+</div>
+{% endblock %}

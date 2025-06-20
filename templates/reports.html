@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+        <div class="col-md-8">
+                <h2>रिपोर्ट्स और विश्लेषण</h2>
+        </div>
+        <div class="col-md-4 text-end">
+                <button class="btn btn-success" onclick="window.print()">
+                        प्रिंट रिपोर्ट
+                </button>
+        </div>
+</div>
+
+<div class="row mt-4">
+        <div class="col-md-4">
+                <div class="card">
+                        <div class="card-header bg-primary text-white">
+                                <h5>बिक्री सारांश</h5>
+                        </div>
+                        <div class="card-body">
+                                <ul class="list-group">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                कुल बिक्री मूल्य
+                                                <span class="badge bg-primary rounded-pill">₹{{ "%.2f"|format(total_sales) }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                कुल बिक्री मात्रा
+                                                <span class="badge bg-primary rounded-pill">{{ total_items_sold }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                औसत बिक्री मूल्य
+                                                <span class="badge bg-primary rounded-pill">
+                                                        ₹{{ "%.2f"|format(total_sales/total_items_sold if total_items_sold > 0 else 0) }}
+                                                </span>
+                                        </li>
+                                </ul>
+                        </div>
+                </div>
+        </div>
+        
+        <div class="col-md-8">
+                <div class="card">
+                        <div class="card-header bg-success text-white">
+                                <h5>टॉप बिकने वाले प्रोडक्ट्स</h5>
+                        </div>
+                        <div class="card-body">
+                                <div class="table-responsive">
+                                        <table class="table">
+                                                <thead>
+                                                        <tr>
+                                                                <th>प्रोडक्ट</th>
+                                                                <th>बिक्री मात्रा</th>
+                                                                <th>कुल बिक्री (₹)</th>
+                                                                <th>स्टॉक शेष</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody>
+                                                        {% for product in products|sort(attribute='quantity', reverse=False)|slice(5) %}
+                                                        <tr>
+                                                                <td>{{ product.name }}</td>
+                                                                <td>
+                                                                        {% set sold = [] %}
+                                                                        {% for sale in sales if sale.product_id == product.id %}
+                                                                        {% if sold.append(sale.quantity) %}{% endif %}
+                                                                        {% endfor %}
+                                                                        {{ sold|sum }}
+                                                                </td>
+                                                                <td>
+                                                                        {% set sale_total = [] %}
+                                                                        {% for sale in sales if sale.product_id == product.id %}
+                                                                        {% if sale_total.append(sale.quantity * sale.sale_price) %}{% endif %}
+                                                                        {% endfor %}
+                                                                        ₹{{ "%.2f"|format(sale_total|sum) }}
+                                                                </td>
+                                                                <td class="{{ 'text-danger' if product.quantity < 5 else 'text-success' }}">
+                                                                        {{ product.quantity }}
+                                                                </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                </tbody>
+                                        </table>
+                                </div>
+                        </div>
+                </div>
+        </div>
+</div>
+
+<div class="row mt-4">
+        <div class="col-md-12">
+                <div class="card">
+                        <div class="card-header bg-info text-white">
+                                <h5>स्टॉक विश्लेषण</h5>
+                        </div>
+                        <div class="card-body">
+                                <div class="table-responsive">
+                                        <table class="table">
+                                                <thead>
+                                                        <tr>
+                                                                <th>श्रेणी</th>
+                                                                <th>प्रोडक्ट्स</th>
+                                                                <th>कुल मात्रा</th>
+                                                                <th>कुल मूल्य (₹)</th>
+                                                                <th>कम स्टॉक</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody>
+                                                        {% set categories = {} %}
+                                                        {% for product in products %}
+                                                        {% if product.category not in categories %}
+                                                        {% set _ = categories.update({product.category: {'count': 1, 'quantity': product.quantity, 
+                                        'value': product.quantity * product.price, 'low_stock': 1 if product.quantity < 5 else 0}}) %}
+                                                        {% else %}
+                                                        {% set _ = categories[product.category].update({
+                                        'count': categories[product.category]['count'] + 1,
+                                        'quantity': categories[product.category]['quantity'] + product.quantity,
+                                        'value': categories[product.category]['value'] + (product.quantity * product.price),
+                                        'low_stock': categories[product.category]['low_stock'] + (1 if product.quantity < 5 else 0)
+                                    }) %}
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                        
+                                                        {% for category, data in categories.items() %}
+                                                        <tr>
+                                                                <td>{{ category }}</td>
+                                                                <td>{{ data['count'] }}</td>
+                                                                <td>{{ data['quantity'] }}</td>
+                                                                <td>₹{{ "%.2f"|format(data['value']) }}</td>
+                                                                <td class="{{ 'text-danger' if data['low_stock'] > 0 else 'text-success' }}">
+                                                                        {{ data['low_stock'] }}
+                                                                </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                </tbody>
+                                        </table>
+                                </div>
+                        </div>
+                </div>
+        </div>
+</div>
+{% endblock %}
