@@ -7,8 +7,9 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
 
-
-with app.app_context():
+# 🔧 यह Render पर पहली request के साथ database tables बना देगा
+@app.before_first_request
+def create_tables():
     db.create_all()
 
 # डेटाबेस मॉडल
@@ -36,7 +37,6 @@ def dashboard():
     low_stock = Product.query.filter(Product.quantity < 10).count()
     total_products = len(products)
     
-    # स्टॉक वैल्यू कैलकुलेशन
     stock_value = sum(p.quantity * p.price for p in products)
     
     return render_template('dashboard.html', 
@@ -48,7 +48,6 @@ def dashboard():
 @app.route('/products', methods=['GET', 'POST'])
 def manage_products():
     if request.method == 'POST':
-        # नया प्रोडक्ट जोड़ें
         name = request.form['name']
         quantity = int(request.form['quantity'])
         price = float(request.form['price'])
@@ -105,7 +104,6 @@ def manage_sales():
             flash('पर्याप्त स्टॉक नहीं है!', 'danger')
             return redirect(url_for('manage_sales'))
         
-        # सेल्स रिकॉर्ड जोड़ें
         new_sale = Sale(
             product_id=product_id,
             quantity=quantity,
@@ -114,7 +112,6 @@ def manage_sales():
         )
         db.session.add(new_sale)
         
-        # स्टॉक अपडेट करें
         product.quantity -= quantity
         db.session.commit()
         
@@ -127,7 +124,6 @@ def manage_sales():
 
 @app.route('/reports')
 def view_reports():
-    # सरल रिपोर्ट्स - वास्तविक एप्लिकेशन में और विस्तार जोड़ें
     products = Product.query.all()
     sales = Sale.query.all()
     
@@ -140,7 +136,6 @@ def view_reports():
                          total_sales=total_sales,
                          total_items_sold=total_items_sold)
 
-# API एंडपॉइंट्स
 @app.route('/api/products')
 def api_products():
     products = Product.query.all()
@@ -152,6 +147,7 @@ def api_products():
         'category': p.category
     } for p in products])
 
+# ✅ लोकल रन के लिए
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
