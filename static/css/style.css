@@ -1,0 +1,44 @@
+body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+}
+
+.navbar {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+}
+
+.card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+}
+
+.table-responsive {
+        overflow-x: auto;
+}
+
+/* हिंदी फॉन्ट सपोर्ट */
+@font-face {
+        font-family: 'Hindi';
+        src: url('https://fonts.googleapis.com/css2?family=Hind&display=swap');
+}
+
+.hindi-text {
+        font-family: 'Hindi', sans-serif;
+}
+
+/* कस्टम बटन स्टाइल्स */
+.btn-action {
+        margin: 0 3px;
+        min-width: 80px;
+}
+
+/* रेस्पॉन्सिव टेबल */
+@media (max-width: 768px) {
+        .table-responsive {
+                width: 100%;
+                margin-bottom: 15px;
+                overflow-y: hidden;
+                -ms-overflow-style: -ms-autohiding-scrollbar;
+                border: 1px solid #ddd;
+        }
+}
