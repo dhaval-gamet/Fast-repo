@@ -7,6 +7,10 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
 
+
+with app.app_context():
+    db.create_all()
+
 # डेटाबेस मॉडल
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
